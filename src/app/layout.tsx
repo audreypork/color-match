@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Color Season Match",
-  description: "Discover your 12-season color palette in 3 questions.",
+  title: "Colour Season Match",
+  description: "Discover your 12-season colour palette in 3 questions.",
 };
 
 export default function RootLayout({

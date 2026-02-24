@@ -1,26 +1,37 @@
 @import "tailwindcss";
+@import "@fontsource/dm-sans/400.css";
+@import "@fontsource/dm-sans/600.css";
+@import "@fontsource/dm-sans/700.css";
+@import "@fontsource/dm-mono/400.css";
+@import "@fontsource/dm-mono/500.css";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --bg: #ffffff;
+  --text: #1a1a1a;
+  --accent: #b8e04a;
+  --blob: #d4e8c2;
+  --border: #1a1a1a;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "DM Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  overflow-x: hidden;
+}
+
+.mono {
+  font-family: "DM Mono", monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+@keyframes star-spin {
+  0%   { transform: rotate(0deg) scale(1); }
+  50%  { transform: rotate(15deg) scale(1.1); }
+  100% { transform: rotate(0deg) scale(1); }
+}
+
+.star-animate {
+  animation: star-spin 3s ease-in-out infinite;
 }
