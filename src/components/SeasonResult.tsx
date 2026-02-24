@@ -10,6 +10,7 @@ interface SeasonResultProps {
   season: Season;
   rank: number;
   isTop: boolean;
+  confidence?: number;
 }
 
 // Group colors by category
@@ -26,6 +27,7 @@ export default function SeasonResult({
   season,
   rank,
   isTop,
+  confidence,
 }: SeasonResultProps) {
   const [copiedHex, setCopiedHex] = useState<string | null>(null);
   const familyColor = getFamilyColor(season.family);
@@ -64,18 +66,26 @@ export default function SeasonResult({
           </div>
 
           {/* Segmented match indicator */}
-          <div className="flex gap-1.5 mt-4">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div
-                key={i}
-                className="h-2 flex-1 rounded-full"
-                style={{ background: i < 7 ? "var(--text)" : "rgba(0,0,0,0.2)" }}
-              />
-            ))}
-          </div>
-          <p className="mono text-xs mt-1" style={{ color: "#555" }}>
-            Strong match
-          </p>
+          {(() => {
+            const filled = Math.round(((confidence ?? 80) / 100) * 8);
+            const label = (confidence ?? 80) >= 80 ? "Strong match" : (confidence ?? 80) >= 60 ? "Good match" : "Possible match";
+            return (
+              <>
+                <div className="flex gap-1.5 mt-4">
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="h-2 flex-1 rounded-full"
+                      style={{ background: i < filled ? "var(--text)" : "rgba(0,0,0,0.2)" }}
+                    />
+                  ))}
+                </div>
+                <p className="mono text-xs mt-1" style={{ color: "#555" }}>
+                  {confidence != null ? `${confidence}% — ${label}` : label}
+                </p>
+              </>
+            );
+          })()}
         </div>
 
         {/* Characteristics */}

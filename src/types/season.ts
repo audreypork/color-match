@@ -54,3 +54,12 @@ export interface QuizAnswers {
   value: Value | null;
   chroma: Chroma | null;
 }
+
+export interface AnalysisResult {
+  season: SeasonKey;
+  confidence: number;
+  undertone: Undertone;
+  value: Value;
+  chroma: Chroma;
+  reasoning: string;
+}

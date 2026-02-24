@@ -1,17 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import Quiz from "@/components/Quiz";
+import PhotoUpload from "@/components/PhotoUpload";
 import SeasonResult from "@/components/SeasonResult";
 import StarSparkle from "@/components/StarSparkle";
 import BlobBg from "@/components/BlobBg";
-import { matchSeason } from "@/lib/matcher";
-import type { QuizAnswers, SeasonKey, Season } from "@/types/season";
+import type { AnalysisResult, SeasonKey, Season } from "@/types/season";
 import seasonsData from "@/data/seasons_color_palettes.json";
 
-type AppState = "intro" | "quiz" | "results";
+type AppState = "intro" | "upload" | "results";
 
-// Representative colors per family for the intro preview
 const FAMILY_PREVIEWS: { family: string; color: string; swatches: string[] }[] = [
   {
     family: "Spring",
@@ -37,15 +35,23 @@ const FAMILY_PREVIEWS: { family: string; color: string; swatches: string[] }[] =
 
 export default function Home() {
   const [appState, setAppState] = useState<AppState>("intro");
-  const [matches, setMatches] = useState<SeasonKey[]>([]);
+  const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
 
-  function handleQuizComplete(answers: QuizAnswers) {
-    const result = matchSeason(answers);
-    setMatches(result);
+  function handleAnalysisComplete(result: AnalysisResult) {
+    setAnalysis(result);
     setAppState("results");
   }
 
   const seasons = seasonsData.seasons as Record<string, Season>;
+
+  // Top match + two neighbours from same family as runner-ups
+  const topKey = analysis?.season;
+  const topSeason = topKey ? seasons[topKey] : null;
+  const runnerUpKeys = topKey
+    ? Object.keys(seasons)
+        .filter((k) => k !== topKey && seasons[k].family === topSeason?.family)
+        .slice(0, 2) as SeasonKey[]
+    : [];
 
   return (
     <div className="relative min-h-screen" style={{ background: "var(--bg)" }}>
@@ -67,7 +73,6 @@ export default function Home() {
             <br />
             Match
           </h1>
-          {/* Stars near heading */}
           <div className="flex gap-3 mt-3">
             <StarSparkle size={18} color="#b8e04a" animate />
             <StarSparkle size={12} color="#f0a500" />
@@ -79,11 +84,10 @@ export default function Home() {
         {appState === "intro" && (
           <div>
             <p className="text-base mb-8 max-w-sm leading-relaxed" style={{ color: "#444" }}>
-              The 12-season system maps your natural colouring to one of twelve
-              palettes — each with harmonious colours that make you look your best.
+              Upload three photos of yourself and Claude will analyse your skin
+              undertone, value, and chroma to find your colour season.
             </p>
 
-            {/* Season family preview cards */}
             <div className="grid grid-cols-2 gap-3 mb-10">
               {FAMILY_PREVIEWS.map((fp) => (
                 <div
@@ -99,10 +103,7 @@ export default function Home() {
                       <span
                         key={hex}
                         className="w-6 h-6 rounded-full"
-                        style={{
-                          backgroundColor: hex,
-                          border: "1px solid rgba(0,0,0,0.1)",
-                        }}
+                        style={{ backgroundColor: hex, border: "1px solid rgba(0,0,0,0.1)" }}
                       />
                     ))}
                   </div>
@@ -111,7 +112,7 @@ export default function Home() {
             </div>
 
             <button
-              onClick={() => setAppState("quiz")}
+              onClick={() => setAppState("upload")}
               className="flex items-center gap-3 px-6 py-3 font-semibold transition-transform hover:-translate-y-0.5"
               style={{
                 background: "var(--accent)",
@@ -131,23 +132,45 @@ export default function Home() {
           </div>
         )}
 
-        {/* Quiz */}
-        {appState === "quiz" && <Quiz onComplete={handleQuizComplete} />}
+        {/* Photo upload */}
+        {appState === "upload" && (
+          <PhotoUpload onComplete={handleAnalysisComplete} />
+        )}
 
         {/* Results */}
-        {appState === "results" && matches.length > 0 && (
+        {appState === "results" && analysis && topKey && topSeason && (
           <div>
+            {/* Claude's reasoning */}
+            {analysis.reasoning && (
+              <div
+                className="mb-5 px-4 py-3 rounded-sm text-sm leading-relaxed"
+                style={{ background: "#f9f9f9", border: "1px solid #eee", color: "#555" }}
+              >
+                <span className="mono text-xs block mb-1" style={{ color: "#aaa" }}>
+                  Analysis
+                </span>
+                {analysis.reasoning}
+              </div>
+            )}
+
             <div className="space-y-5">
-              {matches.map((key, i) => {
-                const season = seasons[key];
-                if (!season) return null;
+              <SeasonResult
+                seasonKey={topKey}
+                season={topSeason}
+                rank={1}
+                isTop={true}
+                confidence={analysis.confidence}
+              />
+              {runnerUpKeys.map((key, i) => {
+                const s = seasons[key];
+                if (!s) return null;
                 return (
                   <SeasonResult
                     key={key}
-                    seasonKey={key as SeasonKey}
-                    season={season}
-                    rank={i + 1}
-                    isTop={i === 0}
+                    seasonKey={key}
+                    season={s}
+                    rank={i + 2}
+                    isTop={false}
                   />
                 );
               })}
@@ -157,7 +180,7 @@ export default function Home() {
               <button
                 onClick={() => {
                   setAppState("intro");
-                  setMatches([]);
+                  setAnalysis(null);
                 }}
                 className="flex items-center gap-3 px-6 py-3 font-semibold transition-transform hover:-translate-y-0.5"
                 style={{
@@ -173,7 +196,7 @@ export default function Home() {
                 >
                   ↺
                 </span>
-                Start over
+                Try again
               </button>
             </div>
           </div>
