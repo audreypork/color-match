@@ -11,6 +11,8 @@ interface SeasonResultProps {
   rank: number;
   isTop: boolean;
   confidence?: number;
+  onViewPalette?: () => void;
+  onCheckItem?: () => void;
 }
 
 // Group colors by category
@@ -28,6 +30,8 @@ export default function SeasonResult({
   rank,
   isTop,
   confidence,
+  onViewPalette,
+  onCheckItem,
 }: SeasonResultProps) {
   const [copiedHex, setCopiedHex] = useState<string | null>(null);
   const familyColor = getFamilyColor(season.family);
@@ -199,6 +203,43 @@ export default function SeasonResult({
             </div>
           )}
         </div>
+
+        {/* Palette + Matcher CTAs */}
+        {(onViewPalette || onCheckItem) && (
+          <div
+            className="px-5 py-4 bg-white flex gap-3 flex-wrap"
+            style={{ borderTop: "1px solid #eee" }}
+          >
+            {onViewPalette && (
+              <button
+                onClick={onViewPalette}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-semibold transition-transform hover:-translate-y-0.5"
+                style={{
+                  background: "var(--accent)",
+                  color: "var(--text)",
+                  borderRadius: 9999,
+                  border: "1.5px solid var(--border)",
+                }}
+              >
+                View full palette →
+              </button>
+            )}
+            {onCheckItem && (
+              <button
+                onClick={onCheckItem}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-semibold transition-transform hover:-translate-y-0.5"
+                style={{
+                  background: "white",
+                  color: "var(--text)",
+                  borderRadius: 9999,
+                  border: "1.5px solid var(--border)",
+                }}
+              >
+                Check an item →
+              </button>
+            )}
+          </div>
+        )}
       </div>
     );
   }
